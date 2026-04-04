@@ -169,10 +169,11 @@ export default function Step2Brand({ data, updateData, onNext, onPrev }: Step2Pr
                 disabled={uploading}
                 style={{ display: 'none' }}
               />
-              <Button
-                as="span"
-                disabled={uploading}
+              <span
                 style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   width: '100%',
                   padding: '10px 12px',
                   background: '#f3f4f6',
@@ -185,7 +186,7 @@ export default function Step2Brand({ data, updateData, onNext, onPrev }: Step2Pr
                 }}
               >
                 {uploading ? 'Uploading...' : 'Choose Logo'}
-              </Button>
+              </span>
             </label>
           </div>
         </div>
