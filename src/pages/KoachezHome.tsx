@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 const coaches = [
   { initials: 'AM', name: 'Amara Osei', niche: 'Executive Leadership', location: 'London, UK', sessions: '200+', color: '#1a6fb5' },
@@ -25,7 +25,16 @@ const features = [
   { icon: '◎', title: 'Analytics that matter', desc: 'See what content works, where clients come from, and how your practice is growing.' },
 ];
 
-const CoachCard = ({ initials, name, niche, location, sessions, color }) => (
+interface CoachCardProps {
+  initials: string
+  name: string
+  niche: string
+  location: string
+  sessions: string
+  color: string
+}
+
+const CoachCard = ({ initials, name, niche, location, sessions, color }: CoachCardProps) => (
   <div
     style={{ background: '#fff', border: '1px solid #e2eaf4', borderRadius: 16, padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 12, transition: 'transform 0.2s, box-shadow 0.2s', cursor: 'pointer' }}
     onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(24,95,165,0.12)'; }}

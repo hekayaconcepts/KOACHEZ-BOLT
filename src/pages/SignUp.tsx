@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { register, oauthLogin } from '@/lib/auth'
-import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -85,7 +84,7 @@ export default function SignUp() {
     setError('')
     setLoading(true)
     try {
-      const { data, error: oauthError } = await oauthLogin('google')
+      const { error: oauthError } = await oauthLogin('google')
       if (oauthError) {
         setError(oauthError.message || 'Google sign-up failed')
       }

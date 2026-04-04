@@ -15,7 +15,7 @@ interface Step4Props {
 export default function Step4Subdomain({ data, updateData, onNext, onPrev }: Step4Props) {
   const [checking, setChecking] = useState(false)
   const [available, setAvailable] = useState<boolean | null>(null)
-  const [suggestion, setSuggestion] = useState('')
+  const [_suggestion, setSuggestion] = useState('')
 
   const checkAvailability = async (subdomain: string) => {
     if (!subdomain || subdomain.length < 3) {

@@ -8,7 +8,7 @@ interface Step5Props {
   onPrev: () => void
 }
 
-export default function Step5Intake({ data, updateData, onNext, onPrev }: Step5Props) {
+export default function Step5Intake({ onNext, onPrev }: Step5Props) {
   return (
     <div>
       <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, color: '#0a2240' }}>Intake Form (Optional)</h2>
