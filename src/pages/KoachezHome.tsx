@@ -73,6 +73,7 @@ const KoachezHome = () => {
           <a href="#how" style={{ fontSize: 14, color: '#4a6a8a', textDecoration: 'none', fontWeight: 500 }}>How it works</a>
           <a href="#coaches" style={{ fontSize: 14, color: '#4a6a8a', textDecoration: 'none', fontWeight: 500 }}>Find a coach</a>
           <a href="#features" style={{ fontSize: 14, color: '#4a6a8a', textDecoration: 'none', fontWeight: 500 }}>For coaches</a>
+          {/* FIXED: Link to /signup instead of alert */}
           <a href="/signup" style={{ background: '#185fa5', color: '#fff', border: 'none', padding: '10px 22px', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer', textDecoration: 'none' }}>Get started free</a>
         </div>
       </nav>
