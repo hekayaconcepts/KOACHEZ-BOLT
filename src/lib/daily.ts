@@ -26,7 +26,7 @@ export function generateRoomName(coachId: string, bookingId: string): string {
 export async function createDailyRoom(
   coachId: string,
   bookingId: string,
-  clientName: string
+  _clientName: string
 ): Promise<DailyRoom> {
   const roomName = generateRoomName(coachId, bookingId)
 

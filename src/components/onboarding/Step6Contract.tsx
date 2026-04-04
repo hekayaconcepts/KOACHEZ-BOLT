@@ -8,7 +8,7 @@ interface Step6Props {
   onPrev: () => void
 }
 
-export default function Step6Contract({ data, updateData, onNext, onPrev }: Step6Props) {
+export default function Step6Contract({ onNext, onPrev }: Step6Props) {
   return (
     <div>
       <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, color: '#0a2240' }}>Coaching Agreement (Optional)</h2>

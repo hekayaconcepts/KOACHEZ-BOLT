@@ -68,7 +68,7 @@ export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(1)
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
-  const [error, setError] = useState('')
+  const [_error, setError] = useState('')
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     name: '',
     tagline: '',
@@ -189,9 +189,9 @@ export default function Onboarding() {
 
         {/* Main Content */}
         <div style={{ flex: 1, padding: '40px 60px', maxWidth: 900 }}>
-          {error && (
+          {_error && (
             <div style={{ background: '#fee2e2', border: '1px solid #fecaca', borderRadius: 8, padding: 16, marginBottom: 24, color: '#991b1b' }}>
-              {error}
+              {_error}
             </div>
           )}
 

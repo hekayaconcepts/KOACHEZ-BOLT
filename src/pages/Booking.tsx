@@ -51,7 +51,7 @@ export default function Booking() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [booking, setBooking] = useState(false)
-  const [bookingId, setBookingId] = useState('')
+  const [_bookingId, setBookingId] = useState('')
 
   useEffect(() => {
     const fetchCoachData = async () => {
