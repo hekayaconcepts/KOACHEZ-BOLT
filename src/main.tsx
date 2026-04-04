@@ -1,7 +1,17 @@
+import React from 'react'; // <--- THIS LINE WAS MISSING
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './index.css';
 
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
+const rootElement = document.getElementById('root');
 
-// Remove dark mode class addition
-createRoot(document.getElementById("root")!).render(<App />);
+if (!rootElement) {
+  console.error('Failed to find the root element. React app will not mount.');
+} else {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+  );
+}
