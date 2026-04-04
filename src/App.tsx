@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import KoachezHome from "./pages/KoachezHome";
-import SignUp from "./pages/signup"; // Fixed: Changed from SignUp to signup to match filename
+import SignUp from "./pages/signup"; // ✅ New (Lowercase 's' in signup)
 import Coaches from "./pages/Coaches";
 import Onboarding from "./pages/Onboarding";
 import CoachProfile from "./pages/CoachProfile";
