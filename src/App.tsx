@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import KoachezHome from "./pages/KoachezHome";
 import SignUp from "./pages/SignUp";
+import Coaches from "./pages/Coaches";
 import Onboarding from "./pages/Onboarding";
 import CoachProfile from "./pages/CoachProfile";
 import Booking from "./pages/Booking";
@@ -25,6 +26,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<KoachezHome />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/coaches" element={<Coaches />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/coach/:subdomain" element={<CoachProfile />} />
             <Route path="/booking/:subdomain" element={<Booking />} />

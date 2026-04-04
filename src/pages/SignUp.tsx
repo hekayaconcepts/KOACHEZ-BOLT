@@ -1,31 +1,16 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { register, oauthLogin } from '@/lib/auth'
+import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-
-const COACHING_NICHES = [
-  'Executive Leadership',
-  'Life Coaching',
-  'Health & Wellness',
-  'Business Strategy',
-  'Career Transition',
-  'Relationship Coaching',
-  'Financial Coaching',
-  'Personal Development',
-  'Sports Performance',
-  'Creative Coaching',
-  'Other'
-]
 
 export default function SignUp() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [niche, setNiche] = useState('')
+  const [role, setRole] = useState<'coach' | 'client'>('coach')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -36,7 +21,7 @@ export default function SignUp() {
     setLoading(true)
 
     // Validation
-    if (!email || !password || !confirmPassword || !niche) {
+    if (!email || !password || !confirmPassword) {
       setError('Please fill in all fields')
       setLoading(false)
       return
@@ -55,7 +40,11 @@ export default function SignUp() {
     }
 
     try {
-      const { data, error: signUpError } = await register(email, password, '')
+      // Step 1: Sign up with Supabase Auth
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+      })
       
       if (signUpError) {
         setError(signUpError.message || 'Sign-up failed')
@@ -63,34 +52,38 @@ export default function SignUp() {
         return
       }
 
-      if (data.user) {
+      if (authData.user) {
+        // Step 2: Insert profile record with role
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: authData.user.id,
+              email: email,
+              role: role,
+              created_at: new Date().toISOString(),
+            }
+          ])
+
+        if (profileError) {
+          setError(`Profile creation failed: ${profileError.message}`)
+          setLoading(false)
+          return
+        }
+
         setSuccess(true)
-        // Store the niche for the next step
-        localStorage.setItem('coachNiche', niche)
-        localStorage.setItem('coachEmail', email)
         
-        // Redirect to onboarding after a short delay
+        // Redirect based on role after a short delay
         setTimeout(() => {
-          navigate('/onboarding')
+          if (role === 'coach') {
+            navigate('/onboarding')
+          } else {
+            navigate('/coaches')
+          }
         }, 1500)
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred during sign-up')
-      setLoading(false)
-    }
-  }
-
-  const handleGoogleSignUp = async () => {
-    setError('')
-    setLoading(true)
-    try {
-      const { error: oauthError } = await oauthLogin('google')
-      if (oauthError) {
-        setError(oauthError.message || 'Google sign-up failed')
-      }
-      // OAuth will redirect automatically
-    } catch (err: any) {
-      setError(err.message || 'An error occurred')
       setLoading(false)
     }
   }
@@ -101,8 +94,8 @@ export default function SignUp() {
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>✓</div>
           <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 8, color: '#0a2240' }}>Welcome to Koachez!</h2>
-          <p style={{ color: '#6b7280', marginBottom: 24 }}>Check your email to confirm your account, then we'll get your page live.</p>
-          <p style={{ fontSize: 12, color: '#9ca3af' }}>Redirecting to onboarding...</p>
+          <p style={{ color: '#6b7280', marginBottom: 24 }}>Check your email to confirm your account.</p>
+          <p style={{ fontSize: 12, color: '#9ca3af' }}>Redirecting...</p>
         </div>
       </div>
     )
@@ -187,18 +180,39 @@ export default function SignUp() {
               />
             </div>
 
+            {/* Role Selector */}
             <div>
-              <Label htmlFor="niche" style={{ display: 'block', marginBottom: 6, fontSize: 14, fontWeight: 500, color: '#374151' }}>Your Coaching Niche</Label>
-              <Select value={niche} onValueChange={setNiche}>
-                <SelectTrigger style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #dbeafe', fontSize: 14 }}>
-                  <SelectValue placeholder="Select your niche" />
-                </SelectTrigger>
-                <SelectContent>
-                  {COACHING_NICHES.map((n) => (
-                    <SelectItem key={n} value={n}>{n}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label style={{ display: 'block', marginBottom: 12, fontSize: 14, fontWeight: 500, color: '#374151' }}>I am a...</Label>
+              <div style={{ display: 'flex', gap: 16 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '12px 16px', borderRadius: 8, border: role === 'coach' ? '2px solid #185fa5' : '1px solid #dbeafe', background: role === 'coach' ? '#f0f7ff' : '#fff', flex: 1 }}>
+                  <input
+                    type="radio"
+                    name="role"
+                    value="coach"
+                    checked={role === 'coach'}
+                    onChange={() => setRole('coach')}
+                    style={{ accentColor: '#185fa5' }}
+                  />
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: '#0a2240' }}>Coach</div>
+                    <div style={{ fontSize: 11, color: '#6b7280' }}>Build your practice</div>
+                  </div>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '12px 16px', borderRadius: 8, border: role === 'client' ? '2px solid #185fa5' : '1px solid #dbeafe', background: role === 'client' ? '#f0f7ff' : '#fff', flex: 1 }}>
+                  <input
+                    type="radio"
+                    name="role"
+                    value="client"
+                    checked={role === 'client'}
+                    onChange={() => setRole('client')}
+                    style={{ accentColor: '#185fa5' }}
+                  />
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: '#0a2240' }}>Client</div>
+                    <div style={{ fontSize: 11, color: '#6b7280' }}>Find a coach</div>
+                  </div>
+                </label>
+              </div>
             </div>
 
             <Button
@@ -218,37 +232,9 @@ export default function SignUp() {
                 marginTop: 8
               }}
             >
-              {loading ? 'Creating account...' : 'Create account'}
+              {loading ? 'Creating account...' : 'Create Account'}
             </Button>
           </form>
-
-          <div style={{ margin: '24px 0', display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ flex: 1, height: 1, background: '#e5e7eb' }} />
-            <span style={{ color: '#9ca3af', fontSize: 12 }}>OR</span>
-            <div style={{ flex: 1, height: 1, background: '#e5e7eb' }} />
-          </div>
-
-          <Button
-            onClick={handleGoogleSignUp}
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '12px',
-              background: '#fff',
-              color: '#374151',
-              border: '1px solid #dbeafe',
-              borderRadius: 6,
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8
-            }}
-          >
-            <span>🔵</span> Sign up with Google
-          </Button>
 
           <p style={{ fontSize: 12, color: '#6b7280', marginTop: 24, textAlign: 'center' }}>
             Already have an account? <a href="/login" style={{ color: '#185fa5', textDecoration: 'none', fontWeight: 600 }}>Log in</a>
