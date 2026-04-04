@@ -10,6 +10,8 @@ import Onboarding from "./pages/Onboarding";
 import CoachProfile from "./pages/CoachProfile";
 import Booking from "./pages/Booking";
 import NotFound from "./pages/NotFound";
+import CoachDashboard from "./pages/coach/Dashboard";
+import ProtectedCoachRoute from "./components/ProtectedCoachRoute";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +28,14 @@ const App = () => (
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/coach/:subdomain" element={<CoachProfile />} />
             <Route path="/booking/:subdomain" element={<Booking />} />
+            <Route 
+              path="/dashboard/coach" 
+              element={
+                <ProtectedCoachRoute>
+                  <CoachDashboard />
+                </ProtectedCoachRoute>
+              } 
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
