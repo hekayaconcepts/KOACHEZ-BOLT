@@ -4,7 +4,7 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/', // <-- ADD THIS LINE
+  base: '/', // Fixes asset paths for Vercel deployment
   plugins: [react()],
   resolve: {
     alias: {
