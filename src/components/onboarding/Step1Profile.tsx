@@ -140,10 +140,11 @@ export default function Step1Profile({ data, updateData, onNext }: Step1Props) {
               disabled={uploading}
               style={{ display: 'none' }}
             />
-            <Button
-              as="span"
-              disabled={uploading}
+            <span
               style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 width: '100%',
                 padding: '10px 12px',
                 background: '#185fa5',
@@ -157,7 +158,7 @@ export default function Step1Profile({ data, updateData, onNext }: Step1Props) {
               }}
             >
               {uploading ? 'Uploading...' : 'Choose Photo'}
-            </Button>
+            </span>
           </label>
 
           <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 8 }}>JPG, PNG, or WebP. Max 5 MB.</p>

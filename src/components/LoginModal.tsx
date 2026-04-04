@@ -63,33 +63,45 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin }) => 
     
     try {
       if (mode === 'login') {
-        const result = await login(formData.email, formData.password);
+        const { data, error } = await login(formData.email, formData.password);
         
-        if (result.success && result.user) {
-          onLogin(result.user.role as 'client' | 'coach', result.user);
+        if (data.user) {
+          const role = (data.user.user_metadata?.role as 'client' | 'coach') || 'client';
+          onLogin(role, {
+            id: data.user.id,
+            email: data.user.email || '',
+            name: data.user.user_metadata?.name,
+            role: role
+          });
           onClose();
         } else {
-          setGeneralError(result.error || 'Login failed');
+          setGeneralError(error?.message || 'Login failed');
         }
       } else if (mode === 'signup') {
-        const result = await register(formData.email, formData.password, formData.name);
+        const { data, error } = await register(formData.email, formData.password, formData.name);
         
-        if (result.success && result.user) {
-          setSuccessMessage(result.message || 'Account created successfully!');
+        if (data.user) {
+          setSuccessMessage('Account created successfully!');
+          const role = (data.user.user_metadata?.role as 'client' | 'coach') || 'client';
           // Auto login after signup
-          onLogin(result.user.role as 'client' | 'coach', result.user);
+          onLogin(role, {
+            id: data.user.id,
+            email: data.user.email || '',
+            name: data.user.user_metadata?.name,
+            role: role
+          });
           setTimeout(() => onClose(), 1500);
         } else {
-          setGeneralError(result.error || 'Registration failed');
+          setGeneralError(error?.message || 'Registration failed');
         }
       } else if (mode === 'forgot') {
-        const result = await forgotPassword(formData.email);
+        const { error } = await forgotPassword(formData.email);
         
-        if (result.success) {
-          setSuccessMessage(result.message || 'Password reset link sent!');
+        if (!error) {
+          setSuccessMessage('Password reset link sent!');
           setTimeout(() => setMode('login'), 3000);
         } else {
-          setGeneralError(result.error || 'Failed to send reset link');
+          setGeneralError(error.message || 'Failed to send reset link');
         }
       }
     } catch (err) {
@@ -99,27 +111,17 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin }) => 
     }
   };
 
-  const handleSocialLogin = async (provider: 'google' | 'apple' | 'linkedin') => {
+  const handleSocialLogin = async (provider: 'google' | 'github') => {
     resetMessages();
     setIsLoading(true);
     
     try {
-      // In a real app, you would integrate with the actual OAuth provider
-      // For demo purposes, we'll simulate the OAuth flow
-      const mockOAuthData = {
-        provider_id: `${provider}_${Date.now()}`,
-        email: `demo_${provider}@example.com`,
-        name: `Demo ${provider.charAt(0).toUpperCase() + provider.slice(1)} User`,
-        avatar_url: undefined
-      };
-
-      const result = await oauthLogin(provider, mockOAuthData);
+      const { data, error } = await oauthLogin(provider);
       
-      if (result.success && result.user) {
-        onLogin(result.user.role as 'client' | 'coach', result.user);
-        onClose();
-      } else {
-        setGeneralError(result.error || 'OAuth login failed');
+      if (data?.url) {
+        window.location.href = data.url;
+      } else if (error) {
+        setGeneralError(error.message || 'OAuth login failed');
       }
     } catch (err) {
       setGeneralError('Failed to connect with provider');
@@ -321,21 +323,12 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin }) => 
                   </svg>
                 </button>
                 <button
-                  onClick={() => handleSocialLogin('apple')}
+                  onClick={() => handleSocialLogin('github')}
                   disabled={isLoading}
                   className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-                  </svg>
-                </button>
-                <button
-                  onClick={() => handleSocialLogin('linkedin')}
-                  disabled={isLoading}
-                  className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-                >
-                  <svg className="w-5 h-5 text-[#0A66C2]" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
                   </svg>
                 </button>
               </div>
