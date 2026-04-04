@@ -7,6 +7,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import KoachezHome from "./pages/KoachezHome";
 import SignUp from "./pages/SignUp";
 import Onboarding from "./pages/Onboarding";
+import CoachProfile from "./pages/CoachProfile";
+import Booking from "./pages/Booking";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +24,8 @@ const App = () => (
             <Route path="/" element={<KoachezHome />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/coach/:subdomain" element={<CoachProfile />} />
+            <Route path="/booking/:subdomain" element={<Booking />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
