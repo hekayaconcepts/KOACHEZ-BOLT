@@ -19,8 +19,10 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 
 interface CoachLayoutProps {
-  children: React.ReactNode;
+  children: React.ReactNode | ((activeItem: string) => React.ReactNode);
   onLogout?: () => void;
+  activeItem?: string;
+  onNavItemChange?: (itemId: string) => void;
 }
 
 const navItems = [
@@ -35,13 +37,20 @@ const navItems = [
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
-export const CoachLayout: React.FC<CoachLayoutProps> = ({ children, onLogout }) => {
+export const CoachLayout: React.FC<CoachLayoutProps> = ({ children, onLogout, activeItem: activeItemProp, onNavItemChange }) => {
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeItem, setActiveItem] = useState('dashboard');
+  const [internalActiveItem, setInternalActiveItem] = useState('dashboard');
+
+  const activeItem = activeItemProp ?? internalActiveItem;
 
   const handleNavClick = (itemId: string) => {
-    setActiveItem(itemId);
+    if (!activeItemProp) {
+      setInternalActiveItem(itemId);
+    }
+    if (onNavItemChange) {
+      onNavItemChange(itemId);
+    }
     setSidebarOpen(false);
   };
 
@@ -125,7 +134,7 @@ export const CoachLayout: React.FC<CoachLayoutProps> = ({ children, onLogout }) 
         }`}
       >
         <div className="p-6 lg:p-8">
-          {children}
+          {typeof children === 'function' ? children(activeItem) : children}
         </div>
       </main>
     </div>

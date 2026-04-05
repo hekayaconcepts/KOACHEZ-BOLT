@@ -29,7 +29,14 @@ const App = () => (
             <Route path="/signup" element={<SignUp />} />
             <Route path="/login" element={<Login />} />
             <Route path="/coaches" element={<Coaches />} />
-            <Route path="/onboarding" element={<Onboarding />} />
+            <Route
+              path="/onboarding"
+              element={
+                <ProtectedCoachRoute>
+                  <Onboarding />
+                </ProtectedCoachRoute>
+              }
+            />
             <Route path="/coach/:subdomain" element={<CoachProfile />} />
             <Route path="/booking/:subdomain" element={<Booking />} />
             <Route 

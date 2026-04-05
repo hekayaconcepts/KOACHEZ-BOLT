@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;700&family=Merriweather:wght@700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -93,7 +93,11 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans dark:bg-background dark:text-foreground;
+    @apply bg-background text-foreground font-body dark:bg-background dark:text-foreground;
+  }
+
+  h1 {
+    @apply font-heading;
   }
 
   pre, code {
