@@ -80,6 +80,7 @@ export default function Signup() {
             </Link>
           </p>
         </div>
+      </div>
 
       <div style={{ maxWidth: 480, margin: '0 auto', width: '100%' }}>
         <div style={{ background: '#fff', borderRadius: 16, padding: 32, boxShadow: '0 4px 6px rgba(0,0,0,0.07), 0 10px 20px rgba(0,0,0,0.05)', border: '1px solid #e5e7eb' }}>
