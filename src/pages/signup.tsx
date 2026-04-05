@@ -43,18 +43,28 @@ export default function Signup() {
       if (authError) throw authError;
       if (!data.user) throw new Error('No user created');
 
-      const { error: profileError } = await supabase
+      // Check if profile already exists
+      const { data: existingProfile } = await supabase
         .from('profiles')
-        .insert([
-          {
-            id: data.user.id,
-            email: data.user.email,
-            role: role,
-            created_at: new Date().toISOString(),
-          },
-        ]);
+        .select('id')
+        .eq('id', data.user.id)
+        .maybeSingle();
 
-      if (profileError) throw profileError;
+      // Only insert if profile doesn't exist
+      if (!existingProfile) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: data.user.id,
+              email: data.user.email,
+              role: role,
+              created_at: new Date().toISOString(),
+            },
+          ]);
+
+        if (profileError) throw profileError;
+      }
 
       if (role === 'coach') {
         navigate('/onboarding');

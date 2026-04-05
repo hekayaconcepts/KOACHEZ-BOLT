@@ -5,8 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import KoachezHome from "./pages/KoachezHome";
-import SignUp from "./pages/signup"; // ✅ New (Lowercase 's' in signup)
+import SignUp from "./pages/signup";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
 import Coaches from "./pages/Coaches";
 import Onboarding from "./pages/Onboarding";
 import CoachProfile from "./pages/CoachProfile";
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/" element={<KoachezHome />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/coaches" element={<Coaches />} />
             <Route
               path="/onboarding"

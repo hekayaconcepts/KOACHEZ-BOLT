@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { verifySession } from '@/lib/auth';
-import type { User } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 
 interface ProtectedCoachRouteProps {
   children: React.ReactNode;
@@ -17,15 +17,35 @@ export const ProtectedCoachRoute: React.FC<ProtectedCoachRouteProps> = ({ childr
         const session = await verifySession();
         
         if (!session || !session.user) {
-          // Not logged in, redirect to home
           navigate('/');
           return;
         }
 
-        const userRole = (session.user.user_metadata?.role as 'client' | 'coach') || 'client';
-        
-        if (userRole !== 'coach') {
-          // Logged in but not a coach, redirect to home
+        let role = (session.user.user_metadata?.role as 'coach' | 'client') || null;
+
+        // Check profiles table if no role in metadata
+        if (!role && session.user.id) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .maybeSingle();
+          role = profile?.role || null;
+        }
+
+        // Check coaches table if still no role
+        if (!role && session.user.id) {
+          const { data: coach } = await supabase
+            .from('coaches')
+            .select('auth_user_id')
+            .eq('auth_user_id', session.user.id)
+            .maybeSingle();
+          if (coach?.auth_user_id) {
+            role = 'coach';
+          }
+        }
+
+        if (role !== 'coach') {
           navigate('/');
           return;
         }

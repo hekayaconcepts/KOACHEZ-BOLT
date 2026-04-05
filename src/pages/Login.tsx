@@ -90,6 +90,11 @@ export default function Login() {
               style={{ width: '100%', padding: '14px 16px', borderRadius: 14, border: '1px solid #cbd5e1', fontSize: 14, outline: 'none', transition: 'border-color 0.2s' }}
               placeholder="••••••••"
             />
+            <div style={{ marginTop: 8, textAlign: 'right' }}>
+              <Link to="/forgot-password" style={{ color: '#2563eb', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
+                Forgot password?
+              </Link>
+            </div>
           </div>
 
           {error && (
