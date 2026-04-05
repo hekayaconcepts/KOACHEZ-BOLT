@@ -30,17 +30,15 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      const { data, error: authError } = await supabase.auth.signUp(
-        {
-          email,
-          password,
-        },
-        {
+      const { data, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
           data: {
             role,
           },
-        }
-      );
+        },
+      });
 
       if (authError) throw authError;
       if (!data.user) throw new Error('No user created');

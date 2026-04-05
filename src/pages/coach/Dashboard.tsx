@@ -1,5 +1,5 @@
 import React from 'react';
-import { GlobeAlt, Users, DollarSign, Calendar as CalendarIcon, Sparkles, ClipboardList, CheckCircle2, ArrowRight, Bell } from 'lucide-react';
+import { Globe, Users, DollarSign, Calendar as CalendarIcon, Sparkles, ClipboardList, CheckCircle2, ArrowRight, Bell } from 'lucide-react';
 import CoachLayout from '@/components/layouts/CoachLayout';
 
 interface ScheduleItem {

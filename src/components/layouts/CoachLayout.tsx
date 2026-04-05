@@ -12,7 +12,7 @@ import {
   Clock,
   BarChart3,
   Megaphone,
-  GlobeAlt
+  Globe
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
