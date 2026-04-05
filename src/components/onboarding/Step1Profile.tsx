@@ -50,7 +50,7 @@ export default function Step1Profile({ data, updateData, onNext }: Step1Props) {
     }
   }
 
-  const isComplete = data.name && data.tagline && data.bio
+  const isComplete = data.name && data.tagline && data.niche && data.bio
 
   return (
     <div>
@@ -78,17 +78,44 @@ export default function Step1Profile({ data, updateData, onNext }: Step1Props) {
             />
           </div>
 
+          <div style={{ marginBottom: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div>
+              <Label htmlFor="tagline" style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 500, color: '#374151' }}>Your Tagline *</Label>
+              <Input
+                id="tagline"
+                type="text"
+                placeholder="e.g., Executive Leadership Coach"
+                value={data.tagline}
+                onChange={(e) => updateData({ tagline: e.target.value })}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #dbeafe', fontSize: 14 }}
+              />
+              <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>One line that describes what you do</p>
+            </div>
+            <div>
+              <Label htmlFor="niche" style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 500, color: '#374151' }}>Your Niche *</Label>
+              <Input
+                id="niche"
+                type="text"
+                placeholder="e.g., Leadership, Wellness, Career"
+                value={data.niche}
+                onChange={(e) => updateData({ niche: e.target.value })}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #dbeafe', fontSize: 14 }}
+              />
+              <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>This helps clients understand your expertise.</p>
+            </div>
+          </div>
+
           <div style={{ marginBottom: 24 }}>
-            <Label htmlFor="tagline" style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 500, color: '#374151' }}>Your Tagline *</Label>
+            <Label htmlFor="location" style={{ display: 'block', marginBottom: 8, fontSize: 14, fontWeight: 500, color: '#374151' }}>Location</Label>
             <Input
-              id="tagline"
+              id="location"
               type="text"
-              placeholder="e.g., Executive Leadership Coach"
-              value={data.tagline}
-              onChange={(e) => updateData({ tagline: e.target.value })}
+              placeholder="e.g., London, UK"
+              value={data.location}
+              onChange={(e) => updateData({ location: e.target.value })}
               style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #dbeafe', fontSize: 14 }}
             />
-            <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>One line that describes what you do</p>
+            <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>Optional, but useful for local clients.</p>
           </div>
 
           <div style={{ marginBottom: 24 }}>

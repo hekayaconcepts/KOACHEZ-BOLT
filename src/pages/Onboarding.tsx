@@ -74,6 +74,8 @@ export default function Onboarding() {
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     name: '',
     tagline: '',
+    niche: '',
+    location: '',
     bio: '',
     profilePhotoUrl: null,
     brandColor: '#185fa5',
