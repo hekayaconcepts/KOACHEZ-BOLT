@@ -60,7 +60,7 @@ const CoachDashboard: React.FC = () => {
             </div>
             <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-white">
-                <GlobeAlt className="h-5 w-5" />
+                <Globe className="h-5 w-5" />
               </div>
               <div>
                 <p className="text-sm text-slate-500">Public profile</p>
@@ -144,7 +144,7 @@ const CoachDashboard: React.FC = () => {
             <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-white">
-                  <GlobeAlt className="h-5 w-5" />
+                  <Globe className="h-5 w-5" />
                 </div>
                 <div>
                   <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Public link</p>
