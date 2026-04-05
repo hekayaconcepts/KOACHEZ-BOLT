@@ -8,6 +8,7 @@ import KoachezHome from "./pages/KoachezHome";
 import SignUp from "./pages/signup";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Coaches from "./pages/Coaches";
 import Onboarding from "./pages/Onboarding";
 import CoachProfile from "./pages/CoachProfile";
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/signup" element={<SignUp />} />
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/coaches" element={<Coaches />} />
             <Route
               path="/onboarding"

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Globe, DollarSign, Sparkles, ClipboardList, CheckCircle2, ArrowRight, Bell, BarChart3 } from 'lucide-react';
 import CoachLayout from '@/components/layouts/CoachLayout';
-import { logout } from '@/lib/auth';
+import { logout, verifySession } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 
 interface ScheduleItem {
   id: number;
@@ -37,13 +38,13 @@ const recentActivity: ActivityItem[] = [
   { id: 3, title: 'Profile published', detail: 'Your public coach page is now live', time: '2 hours ago' },
 ];
 
-const renderHomeSection = () => (
+const renderHomeSection = (firstName: string = 'Coach') => (
   <div className="space-y-8">
     <header className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Coach Dashboard</p>
-          <h1 className="mt-3 text-3xl text-slate-950">Good morning, Coach</h1>
+          <h1 className="mt-3 text-3xl text-slate-950">Good morning, {firstName}</h1>
           <p className="mt-2 text-sm text-slate-500">What you need to focus on today to accept new clients and stay booked.</p>
         </div>
         <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm flex items-center gap-4">
@@ -418,7 +419,32 @@ const sectionContent = {
 
 const CoachDashboard: React.FC = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [firstName, setFirstName] = useState('Coach');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCoachData = async () => {
+      try {
+        const session = await verifySession();
+        if (!session?.user?.id) return;
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', session.user.id)
+          .maybeSingle();
+
+        if (profile?.full_name) {
+          const name = profile.full_name.split(' ')[0];
+          setFirstName(name);
+        }
+      } catch (error) {
+        console.error('Failed to fetch coach data:', error);
+      }
+    };
+
+    fetchCoachData();
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -440,7 +466,7 @@ const CoachDashboard: React.FC = () => {
             </div>
           </div>
 
-          {activeItem === 'dashboard' && renderHomeSection()}
+          {activeItem === 'dashboard' && renderHomeSection(firstName)}
           {activeItem === 'earnings' && <EarningsSection />}
           {activeItem !== 'dashboard' && activeItem !== 'earnings' && sectionContent[activeItem as keyof typeof sectionContent]}
         </div>
