@@ -1,187 +1,247 @@
 import React from 'react';
-import { Users, DollarSign, Calendar as CalendarIcon } from 'lucide-react';
+import { GlobeAlt, Users, DollarSign, Calendar as CalendarIcon, Sparkles, ClipboardList, CheckCircle2, ArrowRight, Bell } from 'lucide-react';
 import CoachLayout from '@/components/layouts/CoachLayout';
 
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  subtitle?: string;
-  icon: React.ElementType;
-  color: string;
+interface ScheduleItem {
+  id: number;
+  time: string;
+  client: string;
+  service: string;
+  status: 'upcoming' | 'today' | 'completed';
 }
-
-const StatCard: React.FC<StatCardProps> = ({ title, value, subtitle, icon: Icon, color }) => (
-  <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-    <div className="flex items-center justify-between mb-4">
-      <div className={`w-12 h-12 ${color} rounded-lg flex items-center justify-center`}>
-        <Icon className="w-6 h-6 text-white" />
-      </div>
-    </div>
-    <div className="text-3xl font-bold text-gray-900">{value}</div>
-    <div className="text-gray-500 text-sm mt-1">{title}</div>
-    {subtitle && <div className="text-xs text-green-600 mt-2 font-medium">{subtitle}</div>}
-  </div>
-);
 
 interface ActivityItem {
   id: number;
-  type: 'booking' | 'payment' | 'new_client';
   title: string;
-  description: string;
+  detail: string;
   time: string;
 }
 
 const CoachDashboard: React.FC = () => {
-  // Placeholder data - will be replaced with real data from backend
-  const stats = {
-    upcomingSessions: 8,
-    totalEarnings: 4575,
-    activeClients: 12,
-  };
+  const profileProgress = 60;
+  const missingItems = ['Add Profile Photo', 'Connect Payment', 'Set Weekly Availability', 'Publish Public Profile'];
+  const videoUsage = { used: 45, limit: 60 };
+  const revenue = { month: 1250, fees: 37.5, net: 1212.5 };
 
-  const recentActivity: ActivityItem[] = [
-    { 
-      id: 1, 
-      type: 'booking', 
-      title: 'New Session Booked', 
-      description: 'John Doe booked a Growth Coaching session', 
-      time: '2 hours ago' 
-    },
-    { 
-      id: 2, 
-      type: 'payment', 
-      title: 'Payment Received', 
-      description: '$450 from Sarah Smith - Premium Package', 
-      time: '5 hours ago' 
-    },
-    { 
-      id: 3, 
-      type: 'new_client', 
-      title: 'New Client Registered', 
-      description: 'Mike Johnson signed up for Starter Package', 
-      time: '1 day ago' 
-    },
-    { 
-      id: 4, 
-      type: 'booking', 
-      title: 'Session Reminder', 
-      description: 'Upcoming session with Emily Brown tomorrow at 3:00 PM', 
-      time: '1 day ago' 
-    },
-    { 
-      id: 5, 
-      type: 'payment', 
-      title: 'Subscription Renewed', 
-      description: 'David Wilson renewed monthly subscription', 
-      time: '2 days ago' 
-    },
+  const todaysSchedule: ScheduleItem[] = [
+    { id: 1, time: '09:00 AM', client: 'John D.', service: 'Career Clarity', status: 'today' },
+    { id: 2, time: '11:30 AM', client: 'Sarah M.', service: 'Interview Prep', status: 'today' },
+    { id: 3, time: '03:00 PM', client: 'Emily R.', service: 'Leadership Session', status: 'upcoming' },
   ];
 
-  const getActivityIcon = (type: ActivityItem['type']) => {
-    switch (type) {
-      case 'booking':
-        return CalendarIcon;
-      case 'payment':
-        return DollarSign;
-      case 'new_client':
-        return Users;
-      default:
-        return CalendarIcon;
-    }
-  };
+  const recentActivity: ActivityItem[] = [
+    { id: 1, title: 'New booking', detail: 'John D. booked a 60-minute session.', time: '10 minutes ago' },
+    { id: 2, title: 'Payment received', detail: '$295 successfully paid by Sarah M.', time: '45 minutes ago' },
+    { id: 3, title: 'Profile published', detail: 'Your public coach page is now live.', time: '2 hours ago' },
+  ];
 
-  const getActivityColor = (type: ActivityItem['type']) => {
-    switch (type) {
-      case 'booking':
-        return 'bg-blue-500';
-      case 'payment':
-        return 'bg-green-500';
-      case 'new_client':
-        return 'bg-purple-500';
-      default:
-        return 'bg-gray-500';
-    }
-  };
+  const quickActions = [
+    'Create Service',
+    'Set Availability',
+    'Copy Public Profile Link',
+    'View Earnings',
+  ];
+
+  const profileUrl = 'koachez.com/jane_doe';
 
   const handleLogout = async () => {
-    // TODO: Implement actual logout logic
     console.log('Logout requested');
   };
 
   return (
     <CoachLayout onLogout={handleLogout}>
-      {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 mt-1">Welcome back! Here's what's happening with your coaching business.</p>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <StatCard
-          title="Upcoming Sessions"
-          value={stats.upcomingSessions}
-          subtitle="This week"
-          icon={CalendarIcon}
-          color="bg-[#0F3A6B]"
-        />
-        <StatCard
-          title="Total Earnings"
-          value={`$${stats.totalEarnings.toLocaleString()}`}
-          subtitle="+12% from last month"
-          icon={DollarSign}
-          color="bg-[#10B981]"
-        />
-        <StatCard
-          title="Active Clients"
-          value={stats.activeClients}
-          subtitle="Currently enrolled"
-          icon={Users}
-          color="bg-purple-600"
-        />
-      </div>
-
-      {/* Recent Activity Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div className="p-6 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
-        </div>
-        <div className="divide-y divide-gray-100">
-          {recentActivity.map((activity) => {
-            const Icon = getActivityIcon(activity.type);
-            const color = getActivityColor(activity.type);
-            return (
-              <div key={activity.id} className="p-4 flex items-start gap-4 hover:bg-gray-50 transition-colors">
-                <div className={`w-10 h-10 ${color} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                  <Icon className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-gray-900">{activity.title}</h3>
-                  <p className="text-gray-500 text-sm mt-0.5">{activity.description}</p>
-                </div>
-                <span className="text-gray-400 text-sm whitespace-nowrap">{activity.time}</span>
+      <div className="space-y-8">
+        <header className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Coach Dashboard</p>
+              <h1 className="mt-3 text-3xl font-semibold text-slate-950">Good morning, Coach</h1>
+              <p className="mt-2 text-sm text-slate-500">Here’s what to work on today to keep your coaching business moving.</p>
+            </div>
+            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-white">
+                <GlobeAlt className="h-5 w-5" />
               </div>
-            );
-          })}
-        </div>
-      </div>
+              <div>
+                <p className="text-sm text-slate-500">Public profile</p>
+                <p className="font-semibold text-slate-950">{profileUrl}</p>
+              </div>
+              <button className="ml-auto rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 transition-colors">
+                Copy Link
+              </button>
+            </div>
+          </div>
+        </header>
 
-      {/* Quick Actions */}
-      <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="flex flex-wrap gap-3">
-          <button className="px-4 py-2 bg-[#0F3A6B] text-white font-medium rounded-lg hover:bg-[#0a2a4f] transition-colors">
-            Add New Service
-          </button>
-          <button className="px-4 py-2 bg-[#10B981] text-white font-medium rounded-lg hover:bg-green-600 transition-colors">
-            Create Article
-          </button>
-          <button className="px-4 py-2 border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
-            View Calendar
-          </button>
-          <button className="px-4 py-2 border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
-            Manage Clients
-          </button>
+        <div className="grid gap-6 xl:grid-cols-[1.7fr_1fr]">
+          <section className="grid gap-6">
+            <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Profile Completion</p>
+                  <h2 className="mt-3 text-2xl font-semibold text-slate-950">{profileProgress}% Complete</h2>
+                </div>
+                <div className="rounded-full bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700">Finish setup to accept bookings</div>
+              </div>
+              <div className="mt-6 rounded-full bg-slate-100 h-3 overflow-hidden">
+                <div className="h-full rounded-full bg-gradient-to-r from-sky-600 to-cyan-500" style={{ width: `${profileProgress}%` }} />
+              </div>
+              <div className="mt-6 grid gap-3">
+                {missingItems.map((item) => (
+                  <div key={item} className="flex items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                    <CheckCircle2 className="h-5 w-5 text-slate-400" />
+                    <span className="text-sm text-slate-700">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Video usage</p>
+                    <h3 className="mt-3 text-xl font-semibold text-slate-950">{videoUsage.used}/{videoUsage.limit} min used</h3>
+                  </div>
+                  <div className="rounded-2xl bg-slate-100 p-3 text-slate-700">
+                    <Sparkles className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="mt-5 rounded-full bg-slate-100 h-3 overflow-hidden">
+                  <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500" style={{ width: `${(videoUsage.used / videoUsage.limit) * 100}%` }} />
+                </div>
+                <p className="mt-4 text-sm text-slate-500">Upgrade to Pro for unlimited video minutes and priority scheduling.</p>
+              </div>
+
+              <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Revenue snapshot</p>
+                    <h3 className="mt-3 text-xl font-semibold text-slate-950">${revenue.month.toLocaleString()}</h3>
+                  </div>
+                  <div className="rounded-2xl bg-slate-100 p-3 text-slate-700">
+                    <DollarSign className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="mt-5 space-y-3">
+                  <div className="flex items-center justify-between text-sm text-slate-600">
+                    <span>Koachez fees</span>
+                    <span className="text-slate-900">-${revenue.fees.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm text-slate-600">
+                    <span>Net earnings</span>
+                    <span className="text-slate-900">${revenue.net.toFixed(2)}</span>
+                  </div>
+                </div>
+                <button className="mt-6 w-full rounded-3xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-700 transition-colors">
+                  View detailed earnings
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <aside className="space-y-6">
+            <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-white">
+                  <GlobeAlt className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Public link</p>
+                  <p className="mt-2 text-lg font-semibold text-slate-950">{profileUrl}</p>
+                </div>
+              </div>
+              <button className="mt-6 w-full rounded-3xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-700 transition-colors">
+                Copy profile link
+              </button>
+            </div>
+
+            <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Pro reminder</p>
+                  <h3 className="mt-2 text-lg font-semibold text-slate-950">Unlimited video & AI tools</h3>
+                </div>
+                <div className="rounded-2xl bg-slate-100 p-3 text-slate-700">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+              </div>
+              <p className="mt-4 text-sm text-slate-500">Upgrade for unlimited session recording, marketing assets, and priority booking.</p>
+            </div>
+          </aside>
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
+          <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Today's schedule</p>
+                <h2 className="mt-3 text-2xl font-semibold text-slate-950">Upcoming calls</h2>
+              </div>
+              <button className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-100 transition-colors">
+                View calendar
+              </button>
+            </div>
+            <div className="space-y-4">
+              {todaysSchedule.map((session) => (
+                <div key={session.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm text-slate-500">{session.time}</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-950">{session.client}</p>
+                      <p className="text-sm text-slate-500">{session.service}</p>
+                    </div>
+                    <button className="rounded-3xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 transition-colors">
+                      Join call
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Recent activity</p>
+                  <h3 className="mt-2 text-xl font-semibold text-slate-950">Platform updates</h3>
+                </div>
+                <div className="rounded-2xl bg-slate-100 p-3 text-slate-700">
+                  <Bell className="h-5 w-5" />
+                </div>
+              </div>
+              <div className="space-y-4">
+                {recentActivity.map((item) => (
+                  <div key={item.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="font-semibold text-slate-900">{item.title}</p>
+                    <p className="mt-1 text-sm text-slate-600">{item.detail}</p>
+                    <p className="mt-2 text-xs text-slate-400">{item.time}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Quick actions</p>
+                  <h3 className="mt-2 text-xl font-semibold text-slate-950">Launch faster</h3>
+                </div>
+                <div className="rounded-2xl bg-slate-100 p-3 text-slate-700">
+                  <ClipboardList className="h-5 w-5" />
+                </div>
+              </div>
+              <div className="grid gap-3">
+                {quickActions.map((action) => (
+                  <button key={action} className="flex items-center justify-between rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-900 hover:border-slate-300 hover:bg-slate-100 transition-colors">
+                    <span>{action}</span>
+                    <ArrowRight className="h-4 w-4 text-slate-500" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </CoachLayout>

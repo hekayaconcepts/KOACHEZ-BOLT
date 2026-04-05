@@ -6,7 +6,13 @@ import {
   Calendar, 
   Settings, 
   Menu,
-  LogOut
+  LogOut,
+  Users,
+  DollarSign,
+  Clock,
+  BarChart3,
+  Megaphone,
+  GlobeAlt
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
@@ -18,10 +24,14 @@ interface CoachLayoutProps {
 }
 
 const navItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'profile', label: 'Profile', icon: User },
+  { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
+  { id: 'bookings', label: 'Bookings', icon: Calendar },
+  { id: 'clients', label: 'Clients', icon: Users },
   { id: 'services', label: 'Services', icon: Briefcase },
-  { id: 'calendar', label: 'Calendar', icon: Calendar },
+  { id: 'availability', label: 'Availability', icon: Clock },
+  { id: 'earnings', label: 'Earnings', icon: DollarSign },
+  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+  { id: 'marketing', label: 'Marketing', icon: Megaphone },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
