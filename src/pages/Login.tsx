@@ -29,8 +29,21 @@ export default function Login() {
           .eq('id', user.id)
           .single()
 
-        if (profileError) throw profileError
+        if (profileError && profileError.code !== 'PGRST116') throw profileError
         role = profile?.role
+      }
+
+      if (!role && user?.id) {
+        const { data: coach, error: coachError } = await supabase
+          .from('coaches')
+          .select('auth_user_id')
+          .eq('auth_user_id', user.id)
+          .single()
+
+        if (coachError && coachError.code !== 'PGRST116') throw coachError
+        if (coach?.auth_user_id) {
+          role = 'coach'
+        }
       }
 
       if (role === 'coach') {
