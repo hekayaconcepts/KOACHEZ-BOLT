@@ -27,9 +27,9 @@ export default function Login() {
           .from('profiles')
           .select('role')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
 
-        if (profileError && profileError.code !== 'PGRST116') throw profileError
+        if (profileError) throw profileError
         role = profile?.role
       }
 
@@ -38,9 +38,9 @@ export default function Login() {
           .from('coaches')
           .select('auth_user_id')
           .eq('auth_user_id', user.id)
-          .single()
+          .maybeSingle()
 
-        if (coachError && coachError.code !== 'PGRST116') throw coachError
+        if (coachError) throw coachError
         if (coach?.auth_user_id) {
           role = 'coach'
         }
