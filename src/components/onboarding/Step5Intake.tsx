@@ -23,7 +23,7 @@ export default function Step5Intake({ data, updateData, onNext, onPrev }: Step5P
       {
         id: Date.now().toString(),
         question: questionText.trim(),
-        type: 'text'
+        type: 'text' as const
       }
     ]
 
