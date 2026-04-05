@@ -226,6 +226,9 @@ CREATE TABLE IF NOT EXISTS coach_profiles (
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- NOTE: If the coach_profiles table already exists in your database without coach_id,
+-- manually run: ALTER TABLE coach_profiles ADD COLUMN coach_id UUID UNIQUE REFERENCES coaches(id) ON DELETE CASCADE;
+
 CREATE TABLE IF NOT EXISTS services (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     coach_id UUID NOT NULL REFERENCES coaches(id) ON DELETE CASCADE,

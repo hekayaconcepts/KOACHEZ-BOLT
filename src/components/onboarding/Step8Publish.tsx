@@ -106,32 +106,53 @@ export default function Step8Publish({ data, user, onPrev }: Step8Props) {
 
       const coachId = coachData[0].id
 
-      // ========== STEP D: Upsert coach_profiles table ==========
-      const { error: coachProfileError } = await supabase
+      // ========== STEP D: Insert or update coach_profiles table ==========
+      // First check if profile exists
+      const { data: existingProfile, error: checkProfileError } = await supabase
         .from('coach_profiles')
-        .upsert(
-          [
-            {
-              coach_id: coachId,
-              niche: localStorage.getItem('coachNiche') || '',
-              location: localStorage.getItem('coachLocation') || '',
-              hourly_rate: data.services.length > 0 ? data.services[0].price : 0,
-              availability: {
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                services: data.services.map((s: Service) => ({
-                  name: s.name,
-                  duration: s.duration,
-                  price: s.price
-                }))
-              },
-              updated_at: new Date().toISOString()
-            }
-          ],
-          { onConflict: 'coach_id' }
-        )
+        .select('id')
+        .eq('coach_id', coachId)
+        .single()
 
-      if (coachProfileError) {
-        throw new Error(`Failed to upsert coach profile: ${coachProfileError.message}`)
+      if (checkProfileError && checkProfileError.code !== 'PGRST116') {
+        throw new Error(`Failed to check coach profile: ${checkProfileError.message}`)
+      }
+
+      const profileData = {
+        coach_id: coachId,
+        niche: localStorage.getItem('coachNiche') || '',
+        location: localStorage.getItem('coachLocation') || '',
+        hourly_rate: data.services.length > 0 ? parseFloat(data.services[0].price.toString()) : 0,
+        availability: {
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          services: data.services.map((s: Service) => ({
+            name: s.name,
+            duration: s.duration,
+            price: s.price
+          }))
+        },
+        updated_at: new Date().toISOString()
+      }
+
+      if (existingProfile) {
+        // Update existing profile
+        const { error: updateError } = await supabase
+          .from('coach_profiles')
+          .update(profileData)
+          .eq('coach_id', coachId)
+
+        if (updateError) {
+          throw new Error(`Failed to update coach profile: ${updateError.message}`)
+        }
+      } else {
+        // Insert new profile
+        const { error: insertError } = await supabase
+          .from('coach_profiles')
+          .insert([profileData])
+
+        if (insertError) {
+          throw new Error(`Failed to create coach profile: ${insertError.message}`)
+        }
       }
 
       // ========== STEP E: Delete existing services & insert new ones ==========
