@@ -203,6 +203,62 @@ CREATE TABLE IF NOT EXISTS accountability_checkins (
     checked_in_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- 2B. MISSING ONBOARDING TABLES (Required for Step8Publish)
+CREATE TABLE IF NOT EXISTS profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT NOT NULL,
+    full_name TEXT,
+    bio TEXT,
+    timezone TEXT,
+    profile_photo_url TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS coach_profiles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    coach_id UUID NOT NULL UNIQUE REFERENCES coaches(id) ON DELETE CASCADE,
+    niche TEXT,
+    location TEXT,
+    hourly_rate DECIMAL(10, 2),
+    availability JSONB,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS services (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    coach_id UUID NOT NULL REFERENCES coaches(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    duration_minutes INTEGER DEFAULT 60,
+    features TEXT[] DEFAULT '{}',
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS coach_subscriptions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    coach_id UUID NOT NULL UNIQUE REFERENCES coaches(id) ON DELETE CASCADE,
+    plan_type TEXT DEFAULT 'free' CHECK (plan_type IN ('free', 'pro', 'enterprise')),
+    billing_cycle TEXT DEFAULT 'monthly',
+    next_billing_date TIMESTAMPTZ,
+    status TEXT DEFAULT 'active' CHECK (status IN ('active', 'cancelled', 'paused')),
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS usage_tracking (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    coach_id UUID NOT NULL UNIQUE REFERENCES coaches(id) ON DELETE CASCADE,
+    video_minutes_used INTEGER DEFAULT 0,
+    video_minutes_limit INTEGER DEFAULT 60,
+    month_start DATE DEFAULT CURRENT_DATE,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- 3. ROW LEVEL SECURITY (RLS) POLICIES
 -- Enable RLS on all tables
 ALTER TABLE coaches ENABLE ROW LEVEL SECURITY;
@@ -224,6 +280,11 @@ ALTER TABLE podcast_episodes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE community_posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE goals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE accountability_checkins ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE coach_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE services ENABLE ROW LEVEL SECURITY;
+ALTER TABLE coach_subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE usage_tracking ENABLE ROW LEVEL SECURITY;
 
 -- Basic Coach Policies (Coach can see/edit their own data)
 CREATE POLICY "Coaches can view their own profile" ON coaches FOR SELECT USING (auth.uid() = auth_user_id);
@@ -266,3 +327,25 @@ CREATE POLICY "Users can create community posts" ON community_posts FOR INSERT W
 -- Goals & Accountability Policies
 CREATE POLICY "Coaches can manage client goals" ON goals FOR ALL USING (EXISTS (SELECT 1 FROM coaches WHERE id = coach_id AND auth_user_id = auth.uid()));
 CREATE POLICY "Clients can view their own goals" ON goals FOR SELECT USING (EXISTS (SELECT 1 FROM clients WHERE id = client_id AND auth_user_id = auth.uid()));
+
+-- Profile Policies
+CREATE POLICY "Users can view their own profile" ON profiles FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can update their own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users can insert their own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- Coach Profile Policies
+CREATE POLICY "Coaches can view their own profile details" ON coach_profiles FOR SELECT USING (EXISTS (SELECT 1 FROM coaches WHERE id = coach_id AND auth_user_id = auth.uid()));
+CREATE POLICY "Coaches can update their own profile details" ON coach_profiles FOR UPDATE USING (EXISTS (SELECT 1 FROM coaches WHERE id = coach_id AND auth_user_id = auth.uid()));
+CREATE POLICY "Public can view published coach profiles" ON coach_profiles FOR SELECT USING (true);
+
+-- Services Policies
+CREATE POLICY "Coaches can manage their services" ON services FOR ALL USING (EXISTS (SELECT 1 FROM coaches WHERE id = coach_id AND auth_user_id = auth.uid()));
+CREATE POLICY "Public can view coach services" ON services FOR SELECT USING (true);
+
+-- Coach Subscriptions Policies
+CREATE POLICY "Coaches can view their own subscription" ON coach_subscriptions FOR SELECT USING (EXISTS (SELECT 1 FROM coaches WHERE id = coach_id AND auth_user_id = auth.uid()));
+CREATE POLICY "Coaches can update their own subscription" ON coach_subscriptions FOR UPDATE USING (EXISTS (SELECT 1 FROM coaches WHERE id = coach_id AND auth_user_id = auth.uid()));
+
+-- Usage Tracking Policies
+CREATE POLICY "Coaches can view their own usage" ON usage_tracking FOR SELECT USING (EXISTS (SELECT 1 FROM coaches WHERE id = coach_id AND auth_user_id = auth.uid()));
+CREATE POLICY "Coaches can update their own usage" ON usage_tracking FOR UPDATE USING (EXISTS (SELECT 1 FROM coaches WHERE id = coach_id AND auth_user_id = auth.uid()));
