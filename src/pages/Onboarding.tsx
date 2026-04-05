@@ -14,6 +14,8 @@ export interface OnboardingData {
   // Step 1: Profile
   name: string
   tagline: string
+  niche: string
+  location: string
   bio: string
   profilePhotoUrl: string | null
 
