@@ -1,0 +1,21 @@
+name: Local Config
+version: 1.0.0
+schema: v1
+models:
+  - name: Llama 3.2 Coding
+    provider: ollama
+    model: llama3.2:3b
+    roles:
+      - chat
+      - edit
+      - apply
+  - name: Moondream Vision
+    provider: ollama
+    model: moondream
+    roles:
+      - chat
+  - name: Nomic Embed
+    provider: ollama
+    model: nomic-embed-text:latest
+    roles:
+      - embed
