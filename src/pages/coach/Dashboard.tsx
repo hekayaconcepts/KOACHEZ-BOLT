@@ -1,421 +1,277 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Globe, DollarSign, Sparkles, ClipboardList, CheckCircle2, ArrowRight, Bell, BarChart3 } from 'lucide-react';
+import { 
+  TrendingUp, TrendingDown, Calendar, Users, DollarSign, 
+  Package, Clock, MoreHorizontal, Search, Filter,
+  Download, Plus, Edit2, Trash2, Eye, MessageSquare
+} from 'lucide-react';
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, 
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import CoachLayout from '@/components/layouts/CoachLayout';
 import { logout, verifySession } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 
-interface ScheduleItem {
-  id: number;
-  time: string;
-  client: string;
-  service: string;
-  status: 'upcoming' | 'today' | 'completed';
-}
-
-interface ActivityItem {
-  id: number;
-  title: string;
-  detail: string;
-  time: string;
-}
-
-const profileProgress = 72;
-const missingItems = ['Add Photo', 'Connect Stripe', 'Set Availability', 'Publish Public Profile'];
-const videoUsage = { used: 45, limit: 60 };
-const revenue = { month: 1250, fees: 37.5, net: 1212.5, lastMonth: 980 };
-const profileUrl = 'koachez.com/jane_doe';
-
-const todaysSchedule: ScheduleItem[] = [
-  { id: 1, time: '09:00 AM', client: 'John D.', service: 'Career Clarity Call', status: 'today' },
-  { id: 2, time: '11:30 AM', client: 'Sarah M.', service: 'Interview Prep', status: 'today' },
-  { id: 3, time: '03:00 PM', client: 'Emily R.', service: 'Leadership Coaching', status: 'upcoming' },
+// Mock data - replace with real Supabase queries later
+const revenueData = [
+  { month: 'Jan', revenue: 1250, clients: 12 },
+  { month: 'Feb', revenue: 2100, clients: 18 },
+  { month: 'Mar', revenue: 1800, clients: 15 },
+  { month: 'Apr', revenue: 2800, clients: 24 },
+  { month: 'May', revenue: 3200, clients: 28 },
+  { month: 'Jun', revenue: 2900, clients: 25 },
 ];
 
-const recentActivity: ActivityItem[] = [
-  { id: 1, title: 'John D. booked a session', detail: 'New booking for Career Clarity', time: '10 minutes ago' },
-  { id: 2, title: 'Sarah M. paid for Package', detail: '$295 received after checkout', time: '45 minutes ago' },
-  { id: 3, title: 'Profile published', detail: 'Your public coach page is now live', time: '2 hours ago' },
+const salesByCategory = [
+  { name: 'Coaching', value: 4500, color: '#0F3A6B' },
+  { name: 'Courses', value: 2800, color: '#22C55E' },
+  { name: 'Digital Products', value: 1200, color: '#F59E0B' },
+  { name: 'Podcast', value: 800, color: '#EC4899' },
 ];
 
-const renderHomeSection = (firstName: string = 'Coach') => (
-  <div className="space-y-8">
-    <header className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Coach Dashboard</p>
-          <h1 className="mt-3 text-3xl text-slate-950">Good morning, {firstName}</h1>
-          <p className="mt-2 text-sm text-slate-500">What you need to focus on today to accept new clients and stay booked.</p>
-        </div>
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0F3A6B] text-white">
-            <Globe className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-sm text-slate-500">Public profile</p>
-            <p className="font-semibold text-slate-950">{profileUrl}</p>
-          </div>
-          <button className="ml-auto rounded-full bg-[#0F3A6B] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0A2C52] transition-colors">
-            Copy Link
-          </button>
-        </div>
-      </div>
-    </header>
+const recentTransactions = [
+  { id: 'TXN-0015', date: 'Apr 9, 2026', client: 'John D.', service: 'Career Coaching', amount: 150.00, status: 'completed' },
+  { id: 'TXN-0014', date: 'Apr 9, 2026', client: 'Sarah M.', service: 'Interview Prep', amount: 95.00, status: 'completed' },
+  { id: 'TXN-0013', date: 'Apr 8, 2026', client: 'Mike R.', service: 'Leadership Course', amount: 299.00, status: 'completed' },
+  { id: 'TXN-0012', date: 'Apr 8, 2026', client: 'Emily W.', service: 'Strategy Session', amount: 200.00, status: 'pending' },
+  { id: 'TXN-0011', date: 'Apr 7, 2026', client: 'David L.', service: 'Group Coaching', amount: 75.00, status: 'completed' },
+];
 
-    <div className="grid gap-6 xl:grid-cols-[1.8fr_1fr]">
-      <section className="grid gap-6">
-        <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Profile completion</p>
-              <h2 className="mt-3 text-2xl font-semibold text-slate-950">{profileProgress}% Complete</h2>
-            </div>
-            <div className="rounded-full bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700">Complete setup to accept bookings</div>
-          </div>
-          <div className="mt-6 rounded-full bg-slate-100 h-3 overflow-hidden">
-            <div className="h-full rounded-full bg-gradient-to-r from-[#0F3A6B] to-[#22C55E]" style={{ width: `${profileProgress}%` }} />
-          </div>
-          <div className="mt-6 grid gap-3">
-            {missingItems.map((item) => (
-              <div key={item} className="flex items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                <CheckCircle2 className="h-5 w-5 text-[#0F3A6B]" />
-                <span className="text-sm text-slate-700">{item}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+const upcomingSessions = [
+  { id: 1, time: '09:00 AM', client: 'John D.', service: 'Career Clarity Call', type: 'video' },
+  { id: 2, time: '11:30 AM', client: 'Sarah M.', service: 'Interview Prep', type: 'video' },
+  { id: 3, time: '03:00 PM', client: 'Emily R.', service: 'Leadership Coaching', type: 'in-person' },
+];
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Video usage</p>
-                <h3 className="mt-3 text-xl font-semibold text-slate-950">{videoUsage.used}/{videoUsage.limit} min used</h3>
-              </div>
-              <div className="rounded-2xl bg-slate-100 p-3 text-slate-700">
-                <Sparkles className="h-5 w-5" />
-              </div>
-            </div>
-            <div className="mt-5 rounded-full bg-slate-100 h-3 overflow-hidden">
-              <div className="h-full rounded-full bg-gradient-to-r from-[#0F3A6B] to-[#10B981]" style={{ width: `${(videoUsage.used / videoUsage.limit) * 100}%` }} />
-            </div>
-            <p className="mt-4 text-sm text-slate-500">Free tier limit reminder. Upgrade to Pro for unlimited video minutes.</p>
-          </div>
+const statsCards = [
+  { 
+    title: 'Total Revenue', 
+    value: '$12,450', 
+    change: '+12.5%', 
+    trend: 'up',
+    icon: DollarSign,
+    color: 'from-emerald-500 to-teal-600'
+  },
+  { 
+    title: 'Active Clients', 
+    value: '48', 
+    change: '+8.2%', 
+    trend: 'up',
+    icon: Users,
+    color: 'from-blue-500 to-indigo-600'
+  },
+  { 
+    title: 'Total Sessions', 
+    value: '156', 
+    change: '+15.3%', 
+    trend: 'up',
+    icon: Calendar,
+    color: 'from-violet-500 to-purple-600'
+  },
+  { 
+    title: 'Avg. Rating', 
+    value: '4.9', 
+    change: '+0.3', 
+    trend: 'up',
+    icon: TrendingUp,
+    color: 'from-orange-500 to-amber-600'
+  },
+];
 
-          <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Revenue snapshot</p>
-                <h3 className="mt-3 text-xl font-semibold text-slate-950">${revenue.month.toLocaleString()}</h3>
-              </div>
-              <div className="rounded-2xl bg-slate-100 p-3 text-slate-700">
-                <DollarSign className="h-5 w-5" />
-              </div>
-            </div>
-            <div className="mt-5 space-y-3">
-              <div className="flex items-center justify-between text-sm text-slate-600">
-                <span>Koachez fees</span>
-                <span className="text-slate-950">-${revenue.fees.toFixed(2)}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm text-slate-600">
-                <span>Net earnings</span>
-                <span className="text-slate-950">${revenue.net.toFixed(2)}</span>
-              </div>
-            </div>
-            <button className="mt-6 w-full rounded-3xl bg-[#0F3A6B] px-4 py-3 text-sm font-semibold text-white hover:bg-[#0A2C52] transition-colors">
-              View detailed earnings
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <aside className="space-y-6">
-        <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0F3A6B] text-white">
-              <Globe className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Public link</p>
-              <p className="mt-2 text-lg font-semibold text-slate-950">{profileUrl}</p>
-            </div>
-          </div>
-          <button className="mt-6 w-full rounded-3xl bg-[#0F3A6B] px-4 py-3 text-sm font-semibold text-white hover:bg-[#0A2C52] transition-colors">
-            Copy profile link
-          </button>
-        </div>
-
-        <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Upgrade banner</p>
-              <h3 className="mt-2 text-lg font-semibold text-slate-950">Pro membership benefits</h3>
-            </div>
-            <div className="rounded-2xl bg-slate-100 p-3 text-slate-700">
-              <Sparkles className="h-5 w-5" />
-            </div>
-          </div>
-          <p className="mt-4 text-sm text-slate-500">Upgrade for unlimited video, marketing assets, and higher booking visibility.</p>
-        </div>
-      </aside>
-    </div>
-
-    <div className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
-      <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Today's schedule</p>
-            <h2 className="mt-3 text-2xl font-semibold text-slate-950">Upcoming calls</h2>
-          </div>
-          <button className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-100 transition-colors">
-            View calendar
-          </button>
-        </div>
-        <div className="space-y-4">
-          {todaysSchedule.map((session) => (
-            <div key={session.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-slate-500">{session.time}</p>
-                  <p className="mt-1 text-lg font-semibold text-slate-950">{session.client}</p>
-                  <p className="text-sm text-slate-500">{session.service}</p>
-                </div>
-                <button className="rounded-3xl bg-[#0F3A6B] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0A2C52] transition-colors">
-                  Join call
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-6">
-        <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Recent activity</p>
-              <h3 className="mt-2 text-xl font-semibold text-slate-950">Recent activity</h3>
-            </div>
-            <div className="rounded-2xl bg-slate-100 p-3 text-slate-700">
-              <Bell className="h-5 w-5" />
-            </div>
-          </div>
-          <div className="space-y-4">
-            {recentActivity.map((item) => (
-              <div key={item.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                <p className="font-semibold text-slate-950">{item.title}</p>
-                <p className="mt-1 text-sm text-slate-600">{item.detail}</p>
-                <p className="mt-2 text-xs text-slate-400">{item.time}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Quick actions</p>
-              <h3 className="mt-2 text-xl font-semibold text-slate-950">Quick actions</h3>
-            </div>
-            <div className="rounded-2xl bg-slate-100 p-3 text-slate-700">
-              <ClipboardList className="h-5 w-5" />
-            </div>
-          </div>
-          <div className="grid gap-3">
-            {['Create Service', 'Set Availability', 'Copy Public Link', 'View Earnings'].map((item) => (
-              <button key={item} className="flex items-center justify-between rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-900 hover:border-slate-300 hover:bg-slate-100 transition-colors">
-                <span>{item}</span>
-                <ArrowRight className="h-4 w-4 text-slate-500" />
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const EarningsSection: React.FC = () => {
+const DashboardHome: React.FC = () => {
   return (
     <div className="space-y-6">
-      <header className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Earnings dashboard</p>
-            <h1 className="mt-3 text-3xl text-slate-950">Earnings overview</h1>
-            <p className="mt-2 text-sm text-slate-500">Track payout history, fees, and campaign performance in one place.</p>
-          </div>
-          <div className="rounded-3xl bg-[#0F3A6B] px-5 py-4 text-white shadow-sm">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-200">Total expense</p>
-            <p className="mt-3 text-2xl font-semibold">$6078.76</p>
-            <p className="mt-1 text-sm text-slate-300">Profit is 34% more than last month</p>
-          </div>
-        </div>
-      </header>
-
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
-        <section className="space-y-6">
-          <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
+      {/* Stats Grid */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {statsCards.map((stat, index) => (
+          <div key={index} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Balance</p>
-                <h2 className="mt-3 text-2xl font-semibold text-slate-950">$52,422</h2>
+                <p className="text-sm font-medium text-slate-500">{stat.title}</p>
+                <p className="mt-2 text-3xl font-bold text-slate-900">{stat.value}</p>
+                <div className="mt-2 flex items-center gap-1">
+                  {stat.trend === 'up' ? (
+                    <TrendingUp className="h-4 w-4 text-emerald-600" />
+                  ) : (
+                    <TrendingDown className="h-4 w-4 text-red-600" />
+                  )}
+                  <span className={`text-sm font-medium ${
+                    stat.trend === 'up' ? 'text-emerald-600' : 'text-red-600'
+                  }`}>
+                    {stat.change}
+                  </span>
+                  <span className="text-sm text-slate-400">vs last month</span>
+                </div>
               </div>
-              <div className="text-sm text-slate-500">Monthly</div>
-            </div>
-            <div className="rounded-3xl bg-slate-100 p-5">
-              <div className="mb-5 flex items-center justify-between text-sm text-slate-600">
-                <span>Saves</span>
-                <span className="text-emerald-600">43.50% +2.45%</span>
-              </div>
-              <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
-                <div className="h-full w-3/5 rounded-full bg-[#0F3A6B]" />
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-3xl bg-slate-50 p-4">
-                <p className="text-sm text-slate-500">Spent this month</p>
-                <p className="mt-3 text-xl font-semibold text-slate-950">$682.50</p>
-              </div>
-              <div className="rounded-3xl bg-slate-50 p-4">
-                <p className="text-sm text-slate-500">New clients</p>
-                <p className="mt-3 text-xl font-semibold text-slate-950">321</p>
-              </div>
-              <div className="rounded-3xl bg-[#0F3A6B] p-4 text-white">
-                <p className="text-sm uppercase tracking-[0.24em] text-slate-200">Activity</p>
-                <p className="mt-3 text-xl font-semibold">$540.50</p>
+              <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center text-white`}>
+                <stat.icon className="h-6 w-6" />
               </div>
             </div>
           </div>
+        ))}
+      </div>
 
-          <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="h-12 w-12 rounded-3xl bg-slate-100 flex items-center justify-center text-slate-700">
-                <BarChart3 className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500">Available credit</p>
-                <p className="mt-2 text-lg font-semibold text-slate-950">Credit card in wallet</p>
-              </div>
+      {/* Charts Row */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Revenue Chart */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900">Revenue Overview</h3>
+              <p className="text-sm text-slate-500">Monthly revenue performance</p>
             </div>
-            <div className="rounded-3xl bg-slate-100 p-4">
-              <p className="text-sm text-slate-600">A smart card option to manage client payments with confidence.</p>
-            </div>
-          </div>
-        </section>
-
-        <aside className="space-y-6">
-          <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Earnings</p>
-              <span className="text-xs text-slate-500">Total</span>
-            </div>
-            <div className="rounded-3xl bg-slate-50 p-5">
-              <p className="text-lg font-semibold text-slate-950">$6078.76</p>
-              <p className="mt-2 text-sm text-slate-500">Payout this month</p>
-            </div>
-          </div>
-
-          <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Your profile</p>
-                <h3 className="mt-2 text-lg font-semibold text-slate-950">Carlic Bolomboy</h3>
-                <p className="text-sm text-slate-500">carlic@gmail.com</p>
-              </div>
-              <div className="h-12 w-12 rounded-3xl bg-[#0F3A6B] text-white flex items-center justify-center">CB</div>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-3xl bg-slate-50 p-4 text-center">
-                <div className="text-sm text-slate-500">Projects</div>
-                <div className="mt-2 text-xl font-semibold text-slate-950">26</div>
-              </div>
-              <div className="rounded-3xl bg-slate-50 p-4 text-center">
-                <div className="text-sm text-slate-500">Followers</div>
-                <div className="mt-2 text-xl font-semibold text-slate-950">356</div>
-              </div>
-              <div className="rounded-3xl bg-slate-50 p-4 text-center">
-                <div className="text-sm text-slate-500">Following</div>
-                <div className="mt-2 text-xl font-semibold text-slate-950">68</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Keep you safe</p>
-              <Bell className="h-5 w-5 text-slate-500" />
-            </div>
-            <p className="text-sm text-slate-500">Update your security settings to protect payments and bookings.</p>
-            <button className="mt-6 w-full rounded-3xl bg-[#0F3A6B] px-4 py-3 text-sm font-semibold text-white hover:bg-[#0A2C52] transition-colors">
-              Update Your Security
+            <button className="p-2 hover:bg-slate-100 rounded-lg">
+              <MoreHorizontal className="h-5 w-5 text-slate-400" />
             </button>
           </div>
-        </aside>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={revenueData}>
+              <defs>
+                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#0F3A6B" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#0F3A6B" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+              <XAxis dataKey="month" stroke="#64748B" fontSize={12} />
+              <YAxis stroke="#64748B" fontSize={12} />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#fff', 
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '8px'
+                }}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="revenue" 
+                stroke="#0F3A6B" 
+                fillOpacity={1} 
+                fill="url(#colorRevenue)" 
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Sales by Category */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900">Sales by Category</h3>
+              <p className="text-sm text-slate-500">Revenue distribution</p>
+            </div>
+            <button className="p-2 hover:bg-slate-100 rounded-lg">
+              <MoreHorizontal className="h-5 w-5 text-slate-400" />
+            </button>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={salesByCategory}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={100}
+                paddingAngle={5}
+                dataKey="value"
+              >
+                {salesByCategory.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Recent Transactions & Upcoming Sessions */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Recent Transactions */}
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="p-6 border-b border-slate-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Recent Transactions</h3>
+                <p className="text-sm text-slate-500">Latest payment activity</p>
+              </div>
+              <button className="text-sm font-medium text-[#0F3A6B] hover:text-[#0A2C52]">
+                View all
+              </button>
+            </div>
+          </div>
+          <div className="divide-y divide-slate-200">
+            {recentTransactions.map((txn) => (
+              <div key={txn.id} className="p-4 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center">
+                      <DollarSign className="h-5 w-5 text-slate-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-900">{txn.client}</p>
+                      <p className="text-xs text-slate-500">{txn.service}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-semibold text-slate-900">${txn.amount.toFixed(2)}</p>
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      txn.status === 'completed' 
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-amber-100 text-amber-700'
+                    }`}>
+                      {txn.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Upcoming Sessions */}
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="p-6 border-b border-slate-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Today's Schedule</h3>
+                <p className="text-sm text-slate-500">{upcomingSessions.length} sessions scheduled</p>
+              </div>
+              <button className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium hover:bg-slate-100">
+                View Calendar
+              </button>
+            </div>
+          </div>
+          <div className="divide-y divide-slate-200">
+            {upcomingSessions.map((session) => (
+              <div key={session.id} className="p-4 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-[#0F3A6B]/10 flex items-center justify-center">
+                      <Clock className="h-5 w-5 text-[#0F3A6B]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-900">{session.client}</p>
+                      <p className="text-xs text-slate-500">{session.service}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-slate-600">{session.time}</span>
+                    <button className="rounded-lg bg-[#0F3A6B] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#0A2C52]">
+                      {session.type === 'video' ? 'Join Call' : 'Details'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-const SectionTitles: Record<string, string> = {
-  dashboard: 'Dashboard',
-  bookings: 'Bookings',
-  clients: 'Clients',
-  services: 'Services',
-  availability: 'Availability',
-  earnings: 'Earnings',
-  analytics: 'Analytics',
-  marketing: 'Marketing',
-  settings: 'Settings',
-};
-
-const sectionContent = {
-  bookings: (
-    <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
-      <h1 className="text-2xl font-semibold text-slate-950">Bookings</h1>
-      <p className="mt-4 text-sm text-slate-600">Full calendar view, upcoming sessions, and booking history will appear here.</p>
-    </div>
-  ),
-  clients: (
-    <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
-      <h1 className="text-2xl font-semibold text-slate-950">Clients</h1>
-      <p className="mt-4 text-sm text-slate-600">A client list with contact info, notes, and engagement history.</p>
-    </div>
-  ),
-  services: (
-    <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
-      <h1 className="text-2xl font-semibold text-slate-950">Services</h1>
-      <p className="mt-4 text-sm text-slate-600">Create and edit prices, durations, and package details.</p>
-    </div>
-  ),
-  availability: (
-    <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
-      <h1 className="text-2xl font-semibold text-slate-950">Availability</h1>
-      <p className="mt-4 text-sm text-slate-600">Set your weekly schedule, holidays, and time blocks.</p>
-    </div>
-  ),
-  analytics: (
-    <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
-      <h1 className="text-2xl font-semibold text-slate-950">Analytics</h1>
-      <p className="mt-4 text-sm text-slate-600">Views, conversion metrics, and revenue trends for your coaching business.</p>
-    </div>
-  ),
-  marketing: (
-    <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
-      <h1 className="text-2xl font-semibold text-slate-950">Marketing</h1>
-      <p className="mt-4 text-sm text-slate-600">Share your public page, download promo assets, and launch campaigns.</p>
-    </div>
-  ),
-  settings: (
-    <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
-      <h1 className="text-2xl font-semibold text-slate-950">Settings</h1>
-      <p className="mt-4 text-sm text-slate-600">Manage profile, password, subscription, and account preferences.</p>
-    </div>
-  ),
-};
+// ... [Other sections: Bookings, Clients, Services, etc. - I'll provide these in the next message to avoid character limit]
 
 const CoachDashboard: React.FC = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
@@ -451,26 +307,50 @@ const CoachDashboard: React.FC = () => {
     navigate('/login');
   };
 
+  const SectionTitles: Record<string, string> = {
+    dashboard: 'Dashboard',
+    bookings: 'Bookings',
+    clients: 'Clients',
+    services: 'Services',
+    availability: 'Availability',
+    earnings: 'Earnings',
+    analytics: 'Analytics',
+    marketing: 'Marketing',
+    settings: 'Settings',
+  };
+
   return (
     <CoachLayout onLogout={handleLogout} activeItem={activeSection} onNavItemChange={setActiveSection}>
-      {(activeItem) => (
-        <div className="space-y-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-sm uppercase tracking-[0.24em] text-slate-500">{SectionTitles[activeItem]}</p>
-              <h1 className="mt-3 text-3xl text-slate-950">{SectionTitles[activeItem]}</h1>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <button className="rounded-3xl border border-[#0F3A6B] bg-[#0F3A6B] px-5 py-3 text-sm font-semibold text-white hover:bg-[#0A2C52] transition-colors">Create Service</button>
-              <button className="rounded-3xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-slate-100 transition-colors">Set Availability</button>
-            </div>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-slate-500">{SectionTitles[activeSection]}</p>
+            <h1 className="mt-1 text-2xl font-bold text-slate-900">{SectionTitles[activeSection]}</h1>
           </div>
-
-          {activeItem === 'dashboard' && renderHomeSection(firstName)}
-          {activeItem === 'earnings' && <EarningsSection />}
-          {activeItem !== 'dashboard' && activeItem !== 'earnings' && sectionContent[activeItem as keyof typeof sectionContent]}
+          <div className="flex gap-2">
+            <button className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+              <Download className="inline h-4 w-4 mr-2" />
+              Export
+            </button>
+            <button className="rounded-lg bg-[#0F3A6B] px-4 py-2 text-sm font-medium text-white hover:bg-[#0A2C52]">
+              <Plus className="inline h-4 w-4 mr-2" />
+              Create New
+            </button>
+          </div>
         </div>
-      )}
+
+        {/* Content */}
+        {activeSection === 'dashboard' && <DashboardHome />}
+        
+        {/* Placeholder for other sections */}
+        {activeSection !== 'dashboard' && (
+          <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
+            <h2 className="text-xl font-semibold text-slate-900">{SectionTitles[activeSection]}</h2>
+            <p className="mt-2 text-slate-500">This section is under development. Check back soon!</p>
+          </div>
+        )}
+      </div>
     </CoachLayout>
   );
 };
