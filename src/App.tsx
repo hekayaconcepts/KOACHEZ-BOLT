@@ -5,7 +5,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import KoachezHome from "./pages/KoachezHome";
+import SignUp from "./pages/signup";
+import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import Coaches from "./pages/Coaches";
+import Onboarding from "./pages/Onboarding";
+import CoachProfile from "./pages/CoachProfile";
+import Booking from "./pages/Booking";
 import NotFound from "./pages/NotFound";
+import CoachDashboard from "./pages/coach/Dashboard";
+import ProtectedCoachRoute from "./components/ProtectedCoachRoute";
 
 const queryClient = new QueryClient();
 
@@ -18,6 +28,29 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<KoachezHome />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/coaches" element={<Coaches />} />
+            <Route
+              path="/onboarding"
+              element={
+                <ProtectedCoachRoute>
+                  <Onboarding />
+                </ProtectedCoachRoute>
+              }
+            />
+            <Route path="/coach/:subdomain" element={<CoachProfile />} />
+            <Route path="/booking/:subdomain" element={<Booking />} />
+            <Route 
+              path="/dashboard/coach" 
+              element={
+                <ProtectedCoachRoute>
+                  <CoachDashboard />
+                </ProtectedCoachRoute>
+              } 
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 const coaches = [
   { initials: 'AM', name: 'Amara Osei', niche: 'Executive Leadership', location: 'London, UK', sessions: '200+', color: '#1a6fb5' },
@@ -25,7 +25,16 @@ const features = [
   { icon: '◎', title: 'Analytics that matter', desc: 'See what content works, where clients come from, and how your practice is growing.' },
 ];
 
-const CoachCard = ({ initials, name, niche, location, sessions, color }) => (
+interface CoachCardProps {
+  initials: string
+  name: string
+  niche: string
+  location: string
+  sessions: string
+  color: string
+}
+
+const CoachCard = ({ initials, name, niche, location, sessions, color }: CoachCardProps) => (
   <div
     style={{ background: '#fff', border: '1px solid #e2eaf4', borderRadius: 16, padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 12, transition: 'transform 0.2s, box-shadow 0.2s', cursor: 'pointer' }}
     onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(24,95,165,0.12)'; }}
@@ -64,7 +73,8 @@ const KoachezHome = () => {
           <a href="#how" style={{ fontSize: 14, color: '#4a6a8a', textDecoration: 'none', fontWeight: 500 }}>How it works</a>
           <a href="#coaches" style={{ fontSize: 14, color: '#4a6a8a', textDecoration: 'none', fontWeight: 500 }}>Find a coach</a>
           <a href="#features" style={{ fontSize: 14, color: '#4a6a8a', textDecoration: 'none', fontWeight: 500 }}>For coaches</a>
-          <button style={{ background: '#185fa5', color: '#fff', border: 'none', padding: '10px 22px', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Get started free</button>
+          {/* FIXED: Link to /signup instead of alert */}
+          <a href="/signup" style={{ background: '#185fa5', color: '#fff', border: 'none', padding: '10px 22px', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer', textDecoration: 'none' }}>Get started free</a>
         </div>
       </nav>
 
