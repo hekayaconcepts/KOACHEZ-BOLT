@@ -1,277 +1,226 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  TrendingUp, TrendingDown, Calendar, Users, DollarSign, 
-  Package, Clock, MoreHorizontal, Search, Filter,
-  Download, Plus, Edit2, Trash2, Eye, MessageSquare
+  Eye, MoreVertical, ChevronLeft, ChevronRight, Calendar, 
+  Download, Plus, Filter, Search
 } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, 
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import CoachLayout from '@/components/layouts/CoachLayout';
 import { logout, verifySession } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 
 // Mock data - replace with real Supabase queries later
-const revenueData = [
-  { month: 'Jan', revenue: 1250, clients: 12 },
-  { month: 'Feb', revenue: 2100, clients: 18 },
-  { month: 'Mar', revenue: 1800, clients: 15 },
-  { month: 'Apr', revenue: 2800, clients: 24 },
-  { month: 'May', revenue: 3200, clients: 28 },
-  { month: 'Jun', revenue: 2900, clients: 25 },
+const bookingHistory = [
+  { id: 'BK-0015', date: 'Apr 9, 2026 15:39', client: 'John D.', service: 'Career Coaching', amount: 150.00, status: 'completed', cashier: 'Admin' },
+  { id: 'BK-0014', date: 'Apr 9, 2026 15:38', client: 'Sarah M.', service: 'Interview Prep', amount: 95.00, status: 'completed', cashier: 'Admin' },
+  { id: 'BK-0013', date: 'Apr 8, 2026 20:59', client: 'Mike R.', service: 'Leadership Course', amount: 299.00, status: 'completed', cashier: 'Admin' },
+  { id: 'BK-0012', date: 'Apr 8, 2026 17:07', client: 'Emily W.', service: 'Strategy Session', amount: 200.00, status: 'pending', cashier: 'Admin' },
+  { id: 'BK-0011', date: 'Apr 6, 2026 21:53', client: 'David L.', service: 'Group Coaching', amount: 75.00, status: 'completed', cashier: 'Admin' },
+  { id: 'BK-0010', date: 'Apr 6, 2026 21:52', client: 'Lisa K.', service: 'Resume Review', amount: 85.00, status: 'completed', cashier: 'Admin' },
+  { id: 'BK-0009', date: 'Apr 6, 2026 15:35', client: 'James T.', service: 'Career Clarity Call', amount: 120.00, status: 'completed', cashier: 'Admin' },
+  { id: 'BK-0008', date: 'Apr 6, 2026 15:34', client: 'Rachel P.', service: 'Negotiation Coaching', amount: 150.00, status: 'completed', cashier: 'Admin' },
+  { id: 'BK-0007', date: 'Apr 6, 2026 15:33', client: 'Mark S.', service: 'Interview Prep', amount: 95.00, status: 'completed', cashier: 'Admin' },
+  { id: 'BK-0006', date: 'Apr 3, 2026 16:22', client: 'Anna B.', service: 'Leadership Coaching', amount: 180.00, status: 'completed', cashier: 'Admin' },
+  { id: 'BK-0005', date: 'Apr 3, 2026 16:21', client: 'Chris M.', service: 'Career Transition', amount: 250.00, status: 'completed', cashier: 'Admin' },
 ];
 
-const salesByCategory = [
-  { name: 'Coaching', value: 4500, color: '#0F3A6B' },
-  { name: 'Courses', value: 2800, color: '#22C55E' },
-  { name: 'Digital Products', value: 1200, color: '#F59E0B' },
-  { name: 'Podcast', value: 800, color: '#EC4899' },
-];
-
-const recentTransactions = [
-  { id: 'TXN-0015', date: 'Apr 9, 2026', client: 'John D.', service: 'Career Coaching', amount: 150.00, status: 'completed' },
-  { id: 'TXN-0014', date: 'Apr 9, 2026', client: 'Sarah M.', service: 'Interview Prep', amount: 95.00, status: 'completed' },
-  { id: 'TXN-0013', date: 'Apr 8, 2026', client: 'Mike R.', service: 'Leadership Course', amount: 299.00, status: 'completed' },
-  { id: 'TXN-0012', date: 'Apr 8, 2026', client: 'Emily W.', service: 'Strategy Session', amount: 200.00, status: 'pending' },
-  { id: 'TXN-0011', date: 'Apr 7, 2026', client: 'David L.', service: 'Group Coaching', amount: 75.00, status: 'completed' },
-];
-
-const upcomingSessions = [
-  { id: 1, time: '09:00 AM', client: 'John D.', service: 'Career Clarity Call', type: 'video' },
-  { id: 2, time: '11:30 AM', client: 'Sarah M.', service: 'Interview Prep', type: 'video' },
-  { id: 3, time: '03:00 PM', client: 'Emily R.', service: 'Leadership Coaching', type: 'in-person' },
-];
-
-const statsCards = [
-  { 
-    title: 'Total Revenue', 
-    value: '$12,450', 
-    change: '+12.5%', 
-    trend: 'up',
-    icon: DollarSign,
-    color: 'from-emerald-500 to-teal-600'
-  },
-  { 
-    title: 'Active Clients', 
-    value: '48', 
-    change: '+8.2%', 
-    trend: 'up',
-    icon: Users,
-    color: 'from-blue-500 to-indigo-600'
-  },
-  { 
-    title: 'Total Sessions', 
-    value: '156', 
-    change: '+15.3%', 
-    trend: 'up',
-    icon: Calendar,
-    color: 'from-violet-500 to-purple-600'
-  },
-  { 
-    title: 'Avg. Rating', 
-    value: '4.9', 
-    change: '+0.3', 
-    trend: 'up',
-    icon: TrendingUp,
-    color: 'from-orange-500 to-amber-600'
-  },
-];
+interface Booking {
+  id: string;
+  date: string;
+  client: string;
+  service: string;
+  amount: number;
+  status: 'completed' | 'pending';
+  cashier: string;
+}
 
 const DashboardHome: React.FC = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const itemsPerPage = 10;
+
+  const filteredBookings = bookingHistory.filter(booking =>
+    booking.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    booking.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    booking.id.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedBookings = filteredBookings.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePrevious = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNext = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
   return (
     <div className="space-y-6">
-      {/* Stats Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {statsCards.map((stat, index) => (
-          <div key={index} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-500">{stat.title}</p>
-                <p className="mt-2 text-3xl font-bold text-slate-900">{stat.value}</p>
-                <div className="mt-2 flex items-center gap-1">
-                  {stat.trend === 'up' ? (
-                    <TrendingUp className="h-4 w-4 text-emerald-600" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4 text-red-600" />
-                  )}
-                  <span className={`text-sm font-medium ${
-                    stat.trend === 'up' ? 'text-emerald-600' : 'text-red-600'
-                  }`}>
-                    {stat.change}
-                  </span>
-                  <span className="text-sm text-slate-400">vs last month</span>
-                </div>
-              </div>
-              <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center text-white`}>
-                <stat.icon className="h-6 w-6" />
-              </div>
-            </div>
-          </div>
-        ))}
+      {/* Header Section */}
+      <div>
+        <h2 className="text-2xl font-bold text-slate-900">Booking History</h2>
+        <p className="text-sm text-slate-500 mt-1">View all past bookings and transactions</p>
       </div>
 
-      {/* Charts Row */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Revenue Chart */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900">Revenue Overview</h3>
-              <p className="text-sm text-slate-500">Monthly revenue performance</p>
-            </div>
-            <button className="p-2 hover:bg-slate-100 rounded-lg">
-              <MoreHorizontal className="h-5 w-5 text-slate-400" />
-            </button>
+      {/* Date Range & Actions */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-slate-400" />
+            <input 
+              type="date" 
+              defaultValue="2026-03-10"
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#0F3A6B]"
+            />
+            <span className="text-slate-400">to</span>
+            <input 
+              type="date" 
+              defaultValue="2026-04-09"
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#0F3A6B]"
+            />
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={revenueData}>
-              <defs>
-                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#0F3A6B" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#0F3A6B" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-              <XAxis dataKey="month" stroke="#64748B" fontSize={12} />
-              <YAxis stroke="#64748B" fontSize={12} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#fff', 
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '8px'
-                }}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="revenue" 
-                stroke="#0F3A6B" 
-                fillOpacity={1} 
-                fill="url(#colorRevenue)" 
-              />
-            </AreaChart>
-          </ResponsiveContainer>
         </div>
 
-        {/* Sales by Category */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900">Sales by Category</h3>
-              <p className="text-sm text-slate-500">Revenue distribution</p>
-            </div>
-            <button className="p-2 hover:bg-slate-100 rounded-lg">
-              <MoreHorizontal className="h-5 w-5 text-slate-400" />
-            </button>
-          </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={salesByCategory}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={100}
-                paddingAngle={5}
-                dataKey="value"
-              >
-                {salesByCategory.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
+        <div className="flex gap-2">
+          <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+            <Filter className="w-4 h-4" />
+            Filter
+          </button>
+          <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+            <Download className="w-4 h-4" />
+            Export
+          </button>
         </div>
       </div>
 
-      {/* Recent Transactions & Upcoming Sessions */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Recent Transactions */}
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="p-6 border-b border-slate-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900">Recent Transactions</h3>
-                <p className="text-sm text-slate-500">Latest payment activity</p>
-              </div>
-              <button className="text-sm font-medium text-[#0F3A6B] hover:text-[#0A2C52]">
-                View all
-              </button>
-            </div>
-          </div>
-          <div className="divide-y divide-slate-200">
-            {recentTransactions.map((txn) => (
-              <div key={txn.id} className="p-4 hover:bg-slate-50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center">
-                      <DollarSign className="h-5 w-5 text-slate-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-slate-900">{txn.client}</p>
-                      <p className="text-xs text-slate-500">{txn.service}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-slate-900">${txn.amount.toFixed(2)}</p>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      txn.status === 'completed' 
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-amber-100 text-amber-700'
-                    }`}>
-                      {txn.status}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* Search Box */}
+      <div className="relative">
+        <Search className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+        <input 
+          type="text"
+          placeholder="Search by booking ID, client name, or service..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1);
+          }}
+          className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F3A6B]"
+        />
+      </div>
+
+      {/* Bookings Section Header */}
+      <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-200">
+          <h3 className="font-semibold text-slate-900">Bookings</h3>
+          <p className="text-xs text-slate-500 mt-1">Click View to see the full receipt</p>
         </div>
 
-        {/* Upcoming Sessions */}
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="p-6 border-b border-slate-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900">Today's Schedule</h3>
-                <p className="text-sm text-slate-500">{upcomingSessions.length} sessions scheduled</p>
-              </div>
-              <button className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium hover:bg-slate-100">
-                View Calendar
-              </button>
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 bg-slate-50">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">BOOKING ID</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">DATE</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">CLIENT</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">SERVICE</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">AMOUNT</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">STATUS</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">CASHIER</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedBookings.length > 0 ? (
+                paginatedBookings.map((booking) => (
+                  <tr key={booking.id} className="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 text-sm font-medium text-slate-900">{booking.id}</td>
+                    <td className="px-6 py-4 text-sm text-slate-600">{booking.date}</td>
+                    <td className="px-6 py-4 text-sm text-slate-900">{booking.client}</td>
+                    <td className="px-6 py-4 text-sm text-slate-600">{booking.service}</td>
+                    <td className="px-6 py-4 text-sm font-semibold text-slate-900">${booking.amount.toFixed(2)}</td>
+                    <td className="px-6 py-4 text-sm">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        booking.status === 'completed'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-amber-100 text-amber-700'
+                      }`}>
+                        {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-600">{booking.cashier}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <button className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-600 hover:text-slate-900">
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-600 hover:text-slate-900">
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={8} className="px-6 py-8 text-center text-slate-500">
+                    No bookings found matching your search.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+          <p className="text-sm text-slate-600">
+            Showing <span className="font-medium">{startIndex + 1}</span>-<span className="font-medium">{Math.min(startIndex + itemsPerPage, filteredBookings.length)}</span> of <span className="font-medium">{filteredBookings.length}</span> results
+          </p>
+          
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handlePrevious}
+              disabled={currentPage === 1}
+              className="p-2 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-slate-600"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
+                const pageNum = i + 1;
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
+                      currentPage === pageNum
+                        ? 'bg-[#0F3A6B] text-white'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
             </div>
-          </div>
-          <div className="divide-y divide-slate-200">
-            {upcomingSessions.map((session) => (
-              <div key={session.id} className="p-4 hover:bg-slate-50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-[#0F3A6B]/10 flex items-center justify-center">
-                      <Clock className="h-5 w-5 text-[#0F3A6B]" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-slate-900">{session.client}</p>
-                      <p className="text-xs text-slate-500">{session.service}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-slate-600">{session.time}</span>
-                    <button className="rounded-lg bg-[#0F3A6B] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#0A2C52]">
-                      {session.type === 'video' ? 'Join Call' : 'Details'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+            
+            <button 
+              onClick={handleNext}
+              disabled={currentPage === totalPages}
+              className="p-2 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-slate-600"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </div>
     </div>
   );
 };
-
-// ... [Other sections: Bookings, Clients, Services, etc. - I'll provide these in the next message to avoid character limit]
 
 const CoachDashboard: React.FC = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
@@ -320,32 +269,19 @@ const CoachDashboard: React.FC = () => {
   };
 
   return (
-    <CoachLayout onLogout={handleLogout} activeItem={activeSection} onNavItemChange={setActiveSection}>
+    <CoachLayout 
+      onLogout={handleLogout} 
+      activeItem={activeSection} 
+      onNavItemChange={setActiveSection}
+      coachName={firstName}
+    >
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-medium text-slate-500">{SectionTitles[activeSection]}</p>
-            <h1 className="mt-1 text-2xl font-bold text-slate-900">{SectionTitles[activeSection]}</h1>
-          </div>
-          <div className="flex gap-2">
-            <button className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-              <Download className="inline h-4 w-4 mr-2" />
-              Export
-            </button>
-            <button className="rounded-lg bg-[#0F3A6B] px-4 py-2 text-sm font-medium text-white hover:bg-[#0A2C52]">
-              <Plus className="inline h-4 w-4 mr-2" />
-              Create New
-            </button>
-          </div>
-        </div>
-
         {/* Content */}
         {activeSection === 'dashboard' && <DashboardHome />}
         
         {/* Placeholder for other sections */}
         {activeSection !== 'dashboard' && (
-          <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
+          <div className="rounded-lg border border-slate-200 bg-white p-12 text-center shadow-sm">
             <h2 className="text-xl font-semibold text-slate-900">{SectionTitles[activeSection]}</h2>
             <p className="mt-2 text-slate-500">This section is under development. Check back soon!</p>
           </div>
